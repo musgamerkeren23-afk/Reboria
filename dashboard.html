@@ -1,10 +1,146 @@
-<h1>Dashboard</h1>
-
-<button onclick="goPC()">Parental Control</button>
-
-<div id="games"></div>
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reboria Dashboard</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-<script src="js/supabase.js"></script>
-<script src="js/dashboard.js"></script>
-<script src="js/parental.js"></script>
+
+<style>
+body{
+margin:0;
+font-family:Arial;
+background:#0a0a0a;
+color:white;
+}
+
+/* header */
+.header{
+background:#111;
+padding:15px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
+
+/* profile */
+.profile{
+display:flex;
+gap:10px;
+align-items:center;
+}
+
+/* button */
+button{
+padding:8px 12px;
+border:none;
+border-radius:8px;
+background:red;
+color:white;
+}
+
+/* game list */
+.games{
+padding:10px;
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:10px;
+}
+
+.card{
+background:#1a1a1a;
+padding:10px;
+border-radius:10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+
+<div class="profile">
+<span id="username"></span>
+</div>
+
+<div>
+<span id="rebuza">💰 0</span>
+<button onclick="goPC()">🔐</button>
+<button onclick="goUpdate()">🚀</button>
+</div>
+
+</div>
+
+<h2 style="padding:10px;">🎮 Discover Games</h2>
+
+<div class="games" id="games"></div>
+
+<script>
+
+// 🔥 SUPABASE
+const supabase = window.supabase.createClient(
+"https://pqbiyrdakqixepvzqtrx.supabase.co",
+"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBxYml5cmRha3FpeGVwdnpxdHJ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyNzA0OTAsImV4cCI6MjA5NDg0NjQ5MH0.qeSx2CtrWIIeTHvnp2ygd1kx92MZKgRzdWQpNOMjwEs"
+);
+
+// 👤 USER
+let user = localStorage.getItem("username") || "Guest";
+username.innerText = "👤 " + user;
+
+// 💰 REBUZA LOAD
+async function loadMoney(){
+
+let {data} = await supabase
+.from("users")
+.select("rebuza")
+.eq("username", user)
+.single();
+
+if(data){
+rebuza.innerText = "💰 " + data.rebuza;
+}
+
+}
+
+// 🎮 LOAD GAME
+async function loadGames(){
+
+let {data} = await supabase.from("games").select("*");
+
+games.innerHTML="";
+
+data.forEach(g=>{
+games.innerHTML += `
+<div class="card">
+<h3>${g.name}</h3>
+<p>${g.desc || "No desc"}</p>
+<button onclick="play()">Play</button>
+</div>
+`;
+});
+
+}
+
+// ▶️ PLAY
+function play(){
+window.location.href = "game.html";
+}
+
+// 🔐 PARENT
+function goPC(){
+window.location.href = "parent_control.html";
+}
+
+// 🚀 UPDATE
+function goUpdate(){
+window.location.href = "https://musgamerkeren23-afk.github.io/Updater-web-V3/";
+}
+
+// 🔥 INIT
+loadMoney();
+loadGames();
+
+</script>
+
+</body>
+  </html>
