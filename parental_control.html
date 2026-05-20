@@ -1,0 +1,15 @@
+<h2>Parental Control</h2>
+
+<input id="pinInput" placeholder="PIN">
+<button onclick="unlock()">Unlock</button>
+
+<div id="panel" style="display:none;">
+<input type="checkbox" id="enable"> Enable<br>
+<input id="limit" type="number" placeholder="minutes"><br>
+<input id="pinSet" placeholder="new PIN"><br>
+<button onclick="savePC()">Save</button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<script src="js/supabase.js"></script>
+<script src="js/parental.js"></script>
