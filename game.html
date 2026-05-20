@@ -2,15 +2,47 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Game</title>
+<title>Reboria Game</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
 <style>
-body{margin:0;overflow:hidden;background:black;}
-#joyBase{position:absolute;bottom:30px;left:30px;width:120px;height:120px;background:rgba(255,255,255,0.1);border-radius:50%;}
-#joyStick{position:absolute;width:60px;height:60px;background:red;border-radius:50%;left:30px;top:30px;}
-#jumpBtn{position:absolute;bottom:50px;right:50px;width:80px;height:80px;background:red;border-radius:50%;color:white;display:flex;align-items:center;justify-content:center;}
+body{margin:0;overflow:hidden;background:black;color:white;font-family:Arial}
+
+/* joystick */
+#joyBase{
+position:absolute;bottom:30px;left:30px;
+width:120px;height:120px;
+background:rgba(255,255,255,0.1);
+border-radius:50%;
+}
+#joyStick{
+position:absolute;width:60px;height:60px;
+background:red;border-radius:50%;
+left:30px;top:30px;
+}
+
+/* jump */
+#jumpBtn{
+position:absolute;bottom:50px;right:50px;
+width:80px;height:80px;
+background:red;border-radius:50%;
+display:flex;align-items:center;justify-content:center;
+}
+
+/* chat */
+#chatBox{
+position:absolute;top:10px;left:10px;
+width:220px;height:150px;
+background:rgba(0,0,0,0.6);
+overflow:auto;font-size:12px;
+padding:5px;border-radius:10px;
+}
+#chatInput{
+position:absolute;bottom:10px;left:10px;
+width:200px;padding:5px;border-radius:5px;
+border:none;
+}
 </style>
 </head>
 
@@ -21,24 +53,32 @@ body{margin:0;overflow:hidden;background:black;}
 <div id="joyBase"><div id="joyStick"></div></div>
 <div id="jumpBtn">JUMP</div>
 
+<div id="chatBox"></div>
+<input id="chatInput" placeholder="type message...">
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 <script src="js/supabase.js"></script>
 <script src="js/parental.js"></script>
 <script src="js/multiplayer.js"></script>
+<script src="js/chat.js"></script>
 
 <script>
+
+// 🌍 THREE
 let scene=new THREE.Scene();
 let camera=new THREE.PerspectiveCamera(75,innerWidth/innerHeight);
 let renderer=new THREE.WebGLRenderer({canvas:c});
 renderer.setSize(innerWidth,innerHeight);
 
-let player=new THREE.Mesh(
+window.player=new THREE.Mesh(
 new THREE.BoxGeometry(),
 new THREE.MeshBasicMaterial({color:0x00ffcc})
 );
 scene.add(player);
+
 camera.position.z=5;
 
+// 🎮 joystick
 let moveX=0,moveZ=0;
 
 joyBase.addEventListener("touchmove",e=>{
@@ -60,12 +100,14 @@ joyStick.style.left="30px";
 joyStick.style.top="30px";
 });
 
+// jump
 let jumping=false,vy=0;
 
 jumpBtn.addEventListener("touchstart",()=>{
 if(!jumping){vy=0.25;jumping=true;}
 });
 
+// loop
 function loop(){
 
 player.position.x+=moveX*0.1;
@@ -87,6 +129,9 @@ renderer.render(scene,camera);
 requestAnimationFrame(loop);
 }
 loop();
+
+// start systems
+initChat();
 
 </script>
 
