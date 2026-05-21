@@ -1,6 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Dashboard</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+<style>
+body{background:#0a0a0a;color:white;font-family:Arial}
+.card{background:#1a1a1a;margin:10px;padding:10px;border-radius:10px}
+button{margin:5px;padding:5px;background:red;color:white;border:none}
+</style>
+</head>
+
+<body>
+
 <h2 id="username"></h2>
 
-<!-- 🔥 NEW BUTTON -->
 <button onclick="goStudio()">🎮 Studio</button>
 <button onclick="goPC()">🔐 Parent</button>
 <button onclick="goUpdate()">🚀 Updates</button>
@@ -10,3 +25,94 @@
 
 <h3>🛒 Shop</h3>
 <div id="shop"></div>
+
+<script>
+
+const supabase = window.supabase.createClient(
+"https://pqbiyrdakqixepvzqtrx.supabase.co",
+"PASTE_ANON_KEY_LO"
+);
+
+let user = localStorage.getItem("username");
+username.innerText="👤 "+user;
+
+// 🔥 UPDATE: auto create user
+async function ensureUser(){
+let {data}=await supabase.from("users").select("*").eq("username",user).single();
+if(!data){
+await supabase.from("users").insert({username:user,rebuza:1000});
+}
+}
+
+// 🎮 LOAD GAME
+async function loadGames(){
+let {data}=await supabase.from("games").select("*");
+
+games.innerHTML="";
+
+if(!data||data.length===0){
+games.innerHTML=`<div class="card">
+<h3>Starter World</h3>
+<button onclick='play("${JSON.stringify([{x:0,y:0,z:0,color:16711680}])}")'>Play</button>
+</div>`;
+return;
+}
+
+data.forEach(g=>{
+games.innerHTML+=`
+<div class="card">
+<h3>${g.name}</h3>
+<button onclick='play(${JSON.stringify(g.map_data)})'>Play</button>
+</div>`;
+});
+}
+
+function play(map){
+localStorage.setItem("map",map);
+location="game.html";
+}
+
+// 🛒 SHOP
+async function loadShop(){
+let {data}=await supabase.from("shop").select("*");
+shop.innerHTML="";
+data.forEach(i=>{
+shop.innerHTML+=`
+<div class="card">
+<h3>${i.name}</h3>
+<p>💰 ${i.price}</p>
+<button onclick="buy(${i.id},${i.price})">Buy</button>
+</div>`;
+});
+}
+
+// 💸 BUY
+async function buy(id,price){
+let {data}=await supabase.from("users").select("rebuza").eq("username",user).single();
+
+if(data.rebuza<price){alert("Uang kurang");return;}
+
+await supabase.from("users").update({
+rebuza:data.rebuza-price
+}).eq("username",user);
+
+await supabase.from("inventory").insert({username:user,item_id:id});
+
+alert("Bought 😈");
+}
+
+function goStudio(){location="studio.html";}
+function goPC(){location="parent_control.html";}
+function goUpdate(){location="https://musgamerkeren23-afk.github.io/Updater-web-V3/";}
+
+// INIT
+(async()=>{
+await ensureUser();
+loadGames();
+loadShop();
+})();
+
+</script>
+
+</body>
+  </html>
