@@ -1,0 +1,29 @@
+<!-- 🔥 NEW -->
+<input id="gameName" placeholder="Game Name">
+
+<button onclick="addCube()">Add Cube</button>
+<button onclick="publish()">🚀 Publish</button>
+
+<script>
+
+let objects=[];
+
+function addCube(){
+objects.push({x:0,y:0,z:0,color:0xff0000});
+}
+
+// 🔥 UPDATED: publish to dashboard
+async function publish(){
+
+await supabase.from("games").insert({
+name: gameName.value,
+desc: "Created in Reboria Studio",
+creator: localStorage.getItem("username"),
+map_data: JSON.stringify(objects)
+});
+
+alert("Game Published 😈🔥");
+
+}
+
+</script>
