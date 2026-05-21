@@ -1,22 +1,28 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Reboria</title>
-<link rel="stylesheet" href="css/style.css">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reboria Login</title>
+<style>
+body{background:#0a0a0a;color:white;text-align:center;margin-top:100px;}
+input,button{margin:5px;padding:10px;}
+</style>
 </head>
-
 <body>
 
 <h1>Reboria 🔥</h1>
 
 <input id="user" placeholder="Username"><br>
-<input id="pass" type="password" placeholder="Password"><br>
+<input id="pass" type="password"><br>
 
 <button onclick="login()">Login</button>
-<p onclick="goReg()">Register</p>
+<p onclick="location='register.html'">Register</p>
 
-<script src="js/auth.js"></script>
+<script>
+function login(){
+localStorage.setItem("username", user.value);
+location="dashboard.html";
+}
+</script>
 
 </body>
 </html>
