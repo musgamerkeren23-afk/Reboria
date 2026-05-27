@@ -1,42 +1,101 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Studio</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reboria Studio</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+<style>
+body{
+margin:0;
+background:#0a0a0a;
+color:white;
+font-family:Arial;
+overflow:hidden;
+}
+
+/* UI PANEL */
+#ui{
+position:absolute;
+top:10px;
+left:10px;
+background:#111;
+padding:10px;
+border-radius:10px;
+z-index:10;
+}
+
+button{
+margin:5px;
+padding:5px;
+background:red;
+color:white;
+border:none;
+border-radius:5px;
+}
+
+input{
+margin:5px;
+padding:5px;
+}
+</style>
 </head>
 
 <body>
 
-<h2>Reboria Studio</h2>
+<canvas id="c"></canvas>
 
-<input id="gameName" placeholder="Game Name">
-<button onclick="addCube()">Add Cube</button>
-<button onclick="publish()">Publish</button>
+<div id="ui">
+<h3>🎮 Reboria Studio</h3>
+
+<input id="gameName" placeholder="Game Name"><br>
+
+<button onclick="addCube()">➕ Cube</button>
+<button onclick="publish()">🚀 Publish</button>
+</div>
 
 <script>
 
+// 🔥 SUPABASE
 const supabase = window.supabase.createClient(
 "https://pqbiyrdakqixepvzqtrx.supabase.co",
 "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBxYml5cmRha3FpeGVwdnpxdHJ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyNzA0OTAsImV4cCI6MjA5NDg0NjQ5MH0.qeSx2CtrWIIeTHvnp2ygd1kx92MZKgRzdWQpNOMjwEs"
 );
 
-let objects=[];
+// 🌍 THREE SETUP
+let scene = new THREE.Scene();
 
+let camera = new THREE.PerspectiveCamera(
+75, window.innerWidth/window.innerHeight
+);
+
+let renderer = new THREE.WebGLRenderer({canvas:c});
+renderer.setSize(window.innerWidth, window.innerHeight);
+
+// LIGHT
+let light = new THREE.DirectionalLight(0xffffff, 1);
+light.position.set(5,5,5);
+scene.add(light);
+
+// PLAYER CAMERA
+camera.position.set(0,5,10);
+
+// GROUND
+let ground = new THREE.Mesh(
+new THREE.PlaneGeometry(50,50),
+new THREE.MeshBasicMaterial({color:0x222222})
+);
+ground.rotation.x = -Math.PI/2;
+scene.add(ground);
+
+// OBJECT STORAGE
+let objects = [];
+
+// ➕ ADD CUBE
 function addCube(){
-objects.push({x:0,y:0,z:0,color:0xff0000});
-}
 
-async function publish(){
-await supabase.from("games").insert({
-name:gameName.value,
-desc:"From Studio",
-creator:localStorage.getItem("username"),
-map_data:JSON.stringify(objects)
-});
-alert("Published 😈🔥");
-}
-
-</script>
-
-</body>
-</html>
+let cube = new THREE.Mesh(
+new THREE.BoxGeometry(),
+new THREE.MeshStandardMaterial({color:
