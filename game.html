@@ -2,47 +2,14 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Reboria Game</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
 <style>
-body{margin:0;overflow:hidden;background:black;color:white;font-family:Arial}
-
-/* joystick */
-#joyBase{
-position:absolute;bottom:30px;left:30px;
-width:120px;height:120px;
-background:rgba(255,255,255,0.1);
-border-radius:50%;
-}
-#joyStick{
-position:absolute;width:60px;height:60px;
-background:red;border-radius:50%;
-left:30px;top:30px;
-}
-
-/* jump */
-#jumpBtn{
-position:absolute;bottom:50px;right:50px;
-width:80px;height:80px;
-background:red;border-radius:50%;
-display:flex;align-items:center;justify-content:center;
-}
-
-/* chat */
-#chatBox{
-position:absolute;top:10px;left:10px;
-width:220px;height:150px;
-background:rgba(0,0,0,0.6);
-overflow:auto;font-size:12px;
-padding:5px;border-radius:10px;
-}
-#chatInput{
-position:absolute;bottom:10px;left:10px;
-width:200px;padding:5px;border-radius:5px;
-border:none;
-}
+body{margin:0;overflow:hidden;background:black}
+#chatBox{position:absolute;top:10px;left:10px;width:200px;height:120px;background:#0008;overflow:auto}
+#chatInput{position:absolute;bottom:10px;left:10px}
 </style>
 </head>
 
@@ -50,88 +17,73 @@ border:none;
 
 <canvas id="c"></canvas>
 
-<div id="joyBase"><div id="joyStick"></div></div>
-<div id="jumpBtn">JUMP</div>
-
 <div id="chatBox"></div>
-<input id="chatInput" placeholder="type message...">
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-<script src="js/supabase.js"></script>
-<script src="js/parental.js"></script>
-<script src="js/multiplayer.js"></script>
-<script src="js/chat.js"></script>
+<input id="chatInput">
 
 <script>
 
-// 🌍 THREE
+const supabase = window.supabase.createClient(
+"https://pqbiyrdakqixepvzqtrx.supabase.co",
+"PASTE_ANON_KEY_LO"
+);
+
 let scene=new THREE.Scene();
 let camera=new THREE.PerspectiveCamera(75,innerWidth/innerHeight);
 let renderer=new THREE.WebGLRenderer({canvas:c});
 renderer.setSize(innerWidth,innerHeight);
 
-window.player=new THREE.Mesh(
+let player=new THREE.Mesh(
 new THREE.BoxGeometry(),
 new THREE.MeshBasicMaterial({color:0x00ffcc})
 );
 scene.add(player);
 
-camera.position.z=5;
+// 🔥 UPDATE: load map
+let map=localStorage.getItem("map");
+if(map){
+JSON.parse(map).forEach(d=>{
+let cube=new THREE.Mesh(
+new THREE.BoxGeometry(),
+new THREE.MeshBasicMaterial({color:d.color})
+);
+cube.position.set(d.x,d.y,d.z);
+scene.add(cube);
+});
+}
 
-// 🎮 joystick
-let moveX=0,moveZ=0;
+// 🔥 UPDATE: load skin
+async function loadSkin(){
+let user=localStorage.getItem("username");
+let {data}=await supabase.from("inventory").select("item_id").eq("username",user);
+if(!data||data.length===0)return;
 
-joyBase.addEventListener("touchmove",e=>{
-let t=e.touches[0];
-let r=joyBase.getBoundingClientRect();
-let x=t.clientX-r.left-60;
-let y=t.clientY-r.top-60;
+let {data:shopItem}=await supabase.from("shop").select("*").eq("id",data[0].item_id).single();
+if(shopItem){player.material.color.set(shopItem.color);}
+}
+loadSkin();
 
-joyStick.style.left=(x+30)+"px";
-joyStick.style.top=(y+30)+"px";
-
-moveX=x/50;
-moveZ=y/50;
+// 💬 CHAT
+chatInput.addEventListener("keydown",e=>{
+if(e.key==="Enter"){
+supabase.from("chat").insert({
+user:localStorage.getItem("username"),
+text:chatInput.value
+});
+chatInput.value="";
+}
 });
 
-joyBase.addEventListener("touchend",()=>{
-moveX=0;moveZ=0;
-joyStick.style.left="30px";
-joyStick.style.top="30px";
-});
+supabase.channel("chat")
+.on("postgres_changes",{event:"INSERT",schema:"public",table:"chat"},p=>{
+chatBox.innerHTML+=`<p>${p.new.user}: ${p.new.text}</p>`;
+}).subscribe();
 
-// jump
-let jumping=false,vy=0;
-
-jumpBtn.addEventListener("touchstart",()=>{
-if(!jumping){vy=0.25;jumping=true;}
-});
-
-// loop
+// LOOP
 function loop(){
-
-player.position.x+=moveX*0.1;
-player.position.z+=moveZ*0.1;
-
-if(jumping){
-player.position.y+=vy;
-vy-=0.01;
-if(player.position.y<=0){
-player.position.y=0;
-jumping=false;
-}
-}
-
-camera.position.set(player.position.x,5,player.position.z+8);
-camera.lookAt(player.position);
-
 renderer.render(scene,camera);
 requestAnimationFrame(loop);
 }
 loop();
-
-// start systems
-initChat();
 
 </script>
 
